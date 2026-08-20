@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#101827;
+    --bg-elevated:#161f34;
+    --bg-elevated-2:#1c2540;
+    --paper:#F7F2E7;
+    --paper-alt:#EFE8D6;
+    --ink:#1B2333;
+    --ink-soft:#5b5346;
+    --hairline-dark:rgba(255,255,255,0.09);
+    --hairline-light:rgba(27,35,51,0.13);
+    --stamp-red:#C1443A;
+    --stamp-red-soft:#3a2321;
+    --mint:#7FAE9B;
+    --gold:#C9A227;
+    --text-onbg:#EDE9DD;
+    --text-onbg-dim:#9AA1B5;
+    --radius-card:10px;
+    --radius-chip:6px;
+    --font-mono:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --font-sans:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --hour-px:52px;
+    --row-px:26px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text-onbg);
+    font-family:var(--font-sans);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  button{font-family:inherit; cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  a, button{
+    outline-offset:2px;
+  }
+  :focus-visible{
+    outline:2px solid var(--mint);
+    outline-offset:2px;
+  }
+
+  /* ---------- Layout shell ---------- */
+  .app-header{
+    padding:22px clamp(16px,4vw,40px) 14px;
+    border-bottom:1px solid var(--hairline-dark);
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    align-items:flex-end;
+    justify-content:space-between;
+  }
+  .wordmark-block{display:flex; flex-direction:column; gap:4px;}
+  .wordmark{
+    font-family:var(--font-mono);
+    font-weight:700;
+    letter-spacing:0.14em;
+    font-size:20px;
+    color:var(--text-onbg);
+  }
+  .wordmark span{color:var(--mint);}
+  .subtitle{
+    font-size:12.5px;
+    color:var(--text-onbg-dim);
+    font-family:var(--font-mono);
+    letter-spacing:0.02em;
+  }
+
+  .header-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .storage-note{
+    font-size:11.5px;
+    color:var(--text-onbg-dim);
+    font-family:var(--font-mono);
+    max-width:220px;
+    line-height:1.4;
+  }
+  .btn{
+    border:1px solid var(--hairline-dark);
+    background:var(--bg-elevated);
+    color:var(--text-onbg);
+    padding:8px 14px;
+    border-radius:7px;
+    font-size:13px;
+    font-weight:500;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:background 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:hover{background:var(--bg-elevated-2); border-color:rgba(255,255,255,0.18);}
+  .btn-ghost{background:transparent;}
+  .btn-add{
+    background:var(--mint);
+    color:#0d1a16;
+    border-color:var(--mint);
+    font-weight:600;
+  }
+  .btn-add:hover{filter:brightness(1.06);}
+  .btn-danger{
+    background:transparent;
+    border-color:rgba(193,68,58,0.5);
+    color:#e58a80;
+  }
+  .btn-danger:hover{background:rgba(193,68,58,0.12);}
+  .btn-small{padding:5px 10px; font-size:12px;}
+
+  .tabbar{
+    display:flex;
+    gap:2px;
+    padding:0 clamp(16px,4vw,40px);
+    border-bottom:1px solid var(--hairline-dark);
+    background:var(--bg-elevated);
+  }
+  .tab{
+    background:transparent;
+    border:none;
+    color:var(--text-onbg-dim);
+    padding:13px 16px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    border-bottom:2px solid transparent;
+  }
+  .tab.is-active{
+    color:var(--text-onbg);
+    border-bottom-color:var(--mint);
+  }
+  .tab:hover{color:var(--text-onbg);}
+
+  main{
+    padding:24px clamp(16px,4vw,40px) 60px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  .view-toolbar{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .view-title{
+    font-family:var(--font-mono);
+    font-size:13px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-onbg-dim);
+  }
+  .view-hint{
+    font-size:12px;
+    color:var(--text-onbg-dim);
+    margin-top:5px;
+    max-width:480px;
+    line-height:1.45;
+  }
+  .week-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+    padding:10px 14px;
+    background:var(--bg-elevated);
+    border:1px solid var(--hairline-dark);
+    border-radius:8px;
+  }
+  .week-nav-controls{display:flex; align-items:center; gap:6px;}
+  .week-label-block{display:flex; flex-direction:column; align-items:center; text-align:center;}
+  .week-label{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+  }
+  .week-range{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--text-onbg-dim);
+  }
+
+  .empty-state{
+    background:var(--bg-elevated);
+    border:1px dashed var(--hairline-dark);
+    border-radius:var(--radius-card);
+    padding:36px 20px;
+    text-align:center;
+    color:var(--text-onbg-dim);
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  /* ---------- Week grid ---------- */
+  .grid-scroll{
+    overflow-x:auto;
+    border-radius:var(--radius-card);
+    border:1px solid var(--hairline-dark);
+    background:var(--bg-elevated);
+  }
+  .week-grid{
+    display:grid;
+    grid-template-columns:56px repeat(7,minmax(128px,1fr));
+    min-width:780px;
+  }
+  .corner-cell{
+    position:sticky; left:0; z-index:3;
+    background:var(--bg-elevated);
+    border-bottom:1px solid var(--hairline-dark);
+  }
+  .day-header{
+    padding:12px 8px;
+    border-left:1px solid var(--hairline-dark);
+    border-bottom:1px solid var(--hairline-dark);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .day-name{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:0.09em;
+    color:var(--text-onbg-dim);
+  }
+  .day-header.is-today .day-name{color:var(--text-onbg);}
+  .day-num{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-onbg-dim);
+  }
+  .day-num.stamp{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px; height:22px;
+    border-radius:50%;
+    border:1.5px solid var(--mint);
+    color:var(--mint);
+    font-weight:600;
+    transform:rotate(-4deg);
+  }
+  .rail{
+    position:sticky; left:0; z-index:2;
+    background:var(--bg-elevated);
+  }
+  .hour-label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--text-onbg-dim);
+    padding:3px 6px 0 0;
+    text-align:right;
+    box-sizing:border-box;
+  }
+  .daycol{
+    position:relative;
+    border-left:1px solid var(--hairline-dark);
+    background-image:repeating-linear-gradient(to bottom, var(--hairline-dark) 0, var(--hairline-dark) 1px, transparent 1px, transparent var(--hour-px));
+  }
+  .due-row-corner{
+    position:sticky; left:0; z-index:2;
+    background:var(--bg-elevated);
+    display:flex; align-items:flex-start; justify-content:flex-end;
+    padding:6px 6px 6px 0;
+    border-bottom:1px solid var(--hairline-dark);
+  }
+  .due-row-label{
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    letter-spacing:0.08em;
+    color:var(--text-onbg-dim);
+  }
+  .due-cell{
+    border-left:1px solid var(--hairline-dark);
+    border-bottom:1px solid var(--hairline-dark);
+    background:var(--bg-elevated-2);
+    padding:5px 5px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    min-height:10px;
+  }
+  .due-pill{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    background:color-mix(in srgb, var(--chip-color) 24%, var(--bg-elevated));
+    border-left:3px solid var(--chip-color);
+    border-radius:5px;
+    padding:2px 6px;
+  }
+  .due-pill.is-done{opacity:0.5;}
+  .due-pill.is-done .due-text{text-decoration:line-through;}
+  .due-check{
+    width:12px; height:12px;
+    accent-color:var(--mint);
+    flex:none;
+    cursor:pointer;
+  }
+  .due-text{
+    font-size:10.5px;
+    color:var(--text-onbg);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    cursor:pointer;
+    flex:1;
+    min-width:0;
+  }
+  .chip{
+    position:absolute;
+    border-radius:var(--radius-chip);
+    padding:4px 7px;
+    background:color-mix(in srgb, var(--chip-color) 26%, var(--bg-elevated));
+    border-left:3px solid var(--chip-color);
+    overflow:hidden;
+    text-align:left;
+    color:var(--text-onbg);
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    line-height:1.25;
+  }
+  .chip:hover{filter:brightness(1.15);}
+  .chip-code{
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:11.5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .chip-time, .chip-loc{
+    font-size:10.5px;
+    color:var(--text-onbg-dim);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* ---------- Deadlines ---------- */
+  .deadline-controls{
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .toggle-row{
+    display:flex; align-items:center; gap:6px;
+    font-size:13px; color:var(--text-onbg-dim);
+  }
+  .date-group{
+    display:flex;
+    gap:16px;
+    padding:18px 0;
+    border-bottom:1px solid var(--hairline-dark);
+  }
+  .date-group:last-child{border-bottom:none;}
+  .stamp-badge{
+    flex:none;
+    width:58px; height:58px;
+    border-radius:50%;
+    border:2px solid var(--ink-soft);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-mono);
+    background:var(--paper);
+    color:var(--ink);
+    transform:rotate(-3deg);
+  }
+  .date-group:nth-child(even) .stamp-badge{transform:rotate(3deg);}
+  .stamp-badge .weekday{font-size:9px; letter-spacing:0.08em; font-weight:600;}
+  .stamp-badge .daynum{font-size:19px; font-weight:700; line-height:1;}
+  .stamp-badge .month{font-size:8.5px; letter-spacing:0.06em;}
+  .stamp-badge.is-overdue{border-color:var(--stamp-red); color:var(--stamp-red);}
+  .stamp-badge.is-today{border-color:var(--mint); color:#0d1a16; background:var(--mint);}
+  .stamp-badge.is-today .weekday, .stamp-badge.is-today .month{color:#0d1a16;}
+
+  .deadline-items{flex:1; display:flex; flex-direction:column; gap:8px;}
+  .deadline-item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:var(--bg-elevated);
+    border:1px solid var(--hairline-dark);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .deadline-item.is-done{opacity:0.5;}
+  .deadline-item.is-done .deadline-title{text-decoration:line-through;}
+  .deadline-check{
+    margin-top:2px;
+    width:16px; height:16px;
+    accent-color:var(--mint);
+    flex:none;
+  }
+  .deadline-body{flex:1; min-width:0;}
+  .deadline-top-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .subject-tag{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    font-weight:600;
+    padding:2px 6px;
+    border-radius:4px;
+    color:#0d1a16;
+    background:var(--chip-color, var(--mint));
+  }
+  .type-pill{
+    font-size:10.5px;
+    padding:2px 7px;
+    border-radius:20px;
+    border:1px solid var(--hairline-dark);
+    color:var(--text-onbg-dim);
+  }
+  .type-pill.type-exam{border-color:rgba(193,68,58,0.6); color:#e58a80;}
+  .deadline-title{font-size:14px; font-weight:500; margin:4px 0 2px;}
+  .deadline-meta{font-size:12px; color:var(--text-onbg-dim);}
+  .deadline-actions{display:flex; gap:6px; flex:none;}
+  .icon-link{
+    background:none; border:none; color:var(--text-onbg-dim);
+    font-size:12px; padding:2px 4px; text-decoration:underline;
+  }
+  .icon-link:hover{color:var(--text-onbg);}
+
+  /* ---------- Subjects ---------- */
+  .subject-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px,1fr));
+    gap:12px;
+  }
+  .subject-card{
+    background:var(--bg-elevated);
+    border:1px solid var(--hairline-dark);
+    border-radius:var(--radius-card);
+    padding:14px;
+    border-top:4px solid var(--chip-color);
+  }
+  .subject-card-head{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .subject-code{font-family:var(--font-mono); font-weight:700; font-size:15px;}
+  .subject-name{font-size:12.5px; color:var(--text-onbg-dim); margin:4px 0 10px; min-height:16px;}
+  .subject-stats{font-size:11.5px; color:var(--text-onbg-dim); font-family:var(--font-mono); margin-bottom:10px;}
+  .subject-card-actions{display:flex; gap:8px;}
+  .add-subject-card{
+    display:flex; align-items:center; justify-content:center;
+    border:1px dashed var(--hairline-dark);
+    border-radius:var(--radius-card);
+    color:var(--text-onbg-dim);
+    background:transparent;
+    min-height:120px;
+    font-size:13px;
+  }
+  .add-subject-card:hover{color:var(--text-onbg); border-color:rgba(255,255,255,0.25);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(8,11,20,0.72);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:12px;
+    padding:22px;
+    width:100%;
+    max-width:420px;
+    max-height:90vh;
+    overflow-y:auto;
+  }
+  .modal h2{
+    font-family:var(--font-mono);
+    font-size:15px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    margin:0 0 16px;
+  }
+  .field{margin-bottom:13px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--hairline-light);
+    border-radius:6px;
+    background:#fff;
+    color:var(--ink);
+    font-size:13.5px;
+  }
+  .field textarea{min-height:60px; resize:vertical;}
+  .field-row{display:flex; gap:10px;}
+  .field-row .field{flex:1;}
+  .color-options{display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;}
+  .color-dot{
+    width:26px; height:26px; border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+  }
+  .color-dot.is-selected{border-color:var(--ink);}
+  .modal-actions{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:18px; gap:10px; flex-wrap:wrap;
+  }
+  .modal-actions-right{display:flex; gap:8px;}
+  .modal .btn{color:var(--ink); border-color:var(--hairline-light); background:#fff;}
+  .modal .btn-add{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .field-hint{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin:-7px 0 13px;
+    line-height:1.45;
+  }
+  .field-error{color:var(--stamp-red); font-size:12px; margin-top:8px; display:none;}
+  .field-error.is-visible{display:block;}
+
+  @media (max-width:640px){
+    .app-header{align-items:flex-start;}
+    .header-actions{width:100%; justify-content:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="wordmark-block">
+    <div class="wordmark">COURSE<span>·</span>DESK</div>
+    <div class="subtitle" id="dateStrap"></div>
+  </div>
+  <div class="header-actions">
+    <span class="storage-note">Saved in this browser only — use Export now and then to back up.</span>
+    <button class="btn btn-ghost btn-small" id="exportBtn">Export backup</button>
+    <button class="btn btn-ghost btn-small" id="importBtn">Import backup</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </div>
+</header>
+
+<nav class="tabbar" role="tablist" aria-label="Views">
+  <button class="tab is-active" data-view="week" role="tab" aria-selected="true">Weekly classes</button>
+  <button class="tab" data-view="deadlines" role="tab" aria-selected="false">Tasks &amp; deadlines</button>
+  <button class="tab" data-view="subjects" role="tab" aria-selected="false">Subjects</button>
+</nav>
+
+<main id="mainView"></main>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" id="modalBody" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ Constants ============ */
+  var STORAGE_KEY = "courseDeskData_v1";
+  var PALETTE = ["#4C6E91","#B98A3E","#6E8B5B","#8B5A7C","#B15E3D","#4B8B8C"];
+  var DAY_NAMES = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+  var MONTH_NAMES = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  var DEFAULT_START_MIN = 8*60;
+  var DEFAULT_END_MIN = 22*60;
+  var HOUR_PX = 52;
+  var ROW_PX = 26;
+
+  var DEFAULT_SUBJECT_CODES = ["GEN2062Y","IS1128","CS4238","CFG1104","CFG3001","FCS2101"];
+
+  /* ============ State ============ */
+  var state = loadState();
+  if(!state.semesterWeek1Start){ state.semesterWeek1Start = "2026-08-10"; }
+  var viewedMonday = mondayOfDate(new Date());
+  var activeView = "week";
+  var editingSessionId = null;
+  var editingDeadlineId = null;
+  var editingSubjectId = null;
+  var showCompletedDeadlines = false;
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){ /* fall through to default */ }
+    return {
+      subjects: DEFAULT_SUBJECT_CODES.map(function(code,i){
+        return { id: uid(), code: code, name: "", color: PALETTE[i % PALETTE.length] };
+      }),
+      sessions: [],
+      deadlines: []
+    };
+  }
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  function uid(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  }
+
+  /* ============ Helpers ============ */
+  function escapeHTML(str){
+    return String(str==null?"":str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function pad2(n){ return n<10 ? "0"+n : ""+n; }
+  function timeToMinutes(t){
+    var parts = t.split(":");
+    return (parseInt(parts[0],10)||0)*60 + (parseInt(parts[1],10)||0);
+  }
+  function getSubject(id){
+    for(var i=0;i<state.subjects.length;i++){ if(state.subjects[i].id===id) return state.subjects[i]; }
+    return null;
+  }
+  function isoDate(d){
+    return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+  }
+  function todayISO(){
+    return isoDate(new Date());
+  }
+  function ourDayIndex(date){ // Monday = 0 ... Sunday = 6
+    return (date.getDay()+6)%7;
+  }
+  function mondayOfDate(d){
+    var idx = ourDayIndex(d);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()-idx);
+  }
+  function getWeekDatesFrom(monday){
+    var out = [];
+    for(var i=0;i<7;i++){
+      out.push(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()+i));
+    }
+    return out;
+  }
+  function shortRange(d1,d2){
+    var m1 = MONTH_NAMES[d1.getMonth()], m2 = MONTH_NAMES[d2.getMonth()];
+    if(m1===m2) return d1.getDate()+"\u2013"+d2.getDate()+" "+m1;
+    return d1.getDate()+" "+m1+" \u2013 "+d2.getDate()+" "+m2;
+  }
+  /* NUS convention: 6 teaching weeks, Recess Week, 7 more teaching weeks
+     (13 total), Reading Week, 2 weeks of Examination. This structure is
+     fixed across NUS's regular-semester calendars; only the Week 1 start
+     date changes each semester (see state.semesterWeek1Start). */
+  function getWeekLabel(w){
+    if(w === -1) return "Orientation Week";
+    if(w < -1) return "Vacation";
+    if(w >= 0 && w <= 5) return "Week " + (w+1);
+    if(w === 6) return "Recess Week";
+    if(w >= 7 && w <= 13) return "Week " + w;
+    if(w === 14) return "Reading Week";
+    if(w === 15) return "Examination (Week 1 of 2)";
+    if(w === 16) return "Examination (Week 2 of 2)";
+    return "Vacation";
+  }
+  function weekOffsetFor(monday){
+    var week1Monday = mondayOfDate(parseISODate(state.semesterWeek1Start));
+    return Math.round((monday - week1Monday) / (7*24*3600*1000));
+  }
+  function nextPaletteColor(){
+    return PALETTE[state.subjects.length % PALETTE.length];
+  }
+
+  /* ============ Render dispatch ============ */
+  function render(){
+    document.getElementById("dateStrap").textContent = formatHeaderDate(new Date());
+    document.querySelectorAll(".tab").forEach(function(tab){
+      var isActive = tab.getAttribute("data-view")===activeView;
+      tab.classList.toggle("is-active", isActive);
+      tab.setAttribute("aria-selected", isActive ? "true":"false");
+    });
+    var main = document.getElementById("mainView");
+    if(activeView==="week") main.innerHTML = renderWeekView();
+    else if(activeView==="deadlines") main.innerHTML = renderDeadlinesView();
+    else main.innerHTML = renderSubjectsView();
+  }
+  function formatHeaderDate(d){
+    return DAY_NAMES[ourDayIndex(d)] + " " + d.getDate() + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  /* ============ Week view ============ */
+  function getGridBounds(){
+    var startMin = DEFAULT_START_MIN, endMin = DEFAULT_END_MIN;
+    if(state.sessions.length){
+      var starts = state.sessions.map(function(s){ return timeToMinutes(s.start); });
+      var ends = state.sessions.map(function(s){ return timeToMinutes(s.end); });
+      startMin = Math.min(DEFAULT_START_MIN, Math.floor(Math.min.apply(null,starts)/60)*60);
+      endMin = Math.max(DEFAULT_END_MIN, Math.ceil(Math.max.apply(null,ends)/60)*60);
+    }
+    return { startMin: startMin, endMin: endMin };
+  }
+
+  function layoutDayChips(sessions){
+    var sorted = sessions.slice().sort(function(a,b){ return timeToMinutes(a.start)-timeToMinutes(b.start); });
+    var columnsEnd = [];
+    var placed = sorted.map(function(s){
+      var start = timeToMinutes(s.start), end = timeToMinutes(s.end);
+      var col = -1;
+      for(var i=0;i<columnsEnd.length;i++){
+        if(columnsEnd[i]<=start){ col=i; break; }
+      }
+      if(col===-1){ col = columnsEnd.length; columnsEnd.push(end); }
+      else { columnsEnd[col] = end; }
+      return { session:s, col:col, start:start, end:end };
+    });
+    var colCount = Math.max(1, columnsEnd.length);
+    return placed.map(function(p){ return { session:p.session, col:p.col, colCount:colCount, start:p.start, end:p.end }; });
+  }
+
+  function weekToolbarHTML(){
+    return '<div class="view-toolbar">'+
+      '<div><div class="view-title">Weekly classes</div>'+
+      '<div class="view-hint">Recurring classes below, plus anything due that day shown along the top \u2014 tick it off right here. Nothing due repeats; classes do, unless you give one an end date.</div></div>'+
+      '<button class="btn btn-add btn-small" data-action="add-session">+ Add class</button>'+
+    '</div>';
+  }
+
+  function weekNavHTML(weekDates, weekLabel, isCurrentWeek){
+    return '<div class="week-nav">'+
+      '<div class="week-nav-controls">'+
+        '<button class="btn btn-small" data-action="prev-week" aria-label="Previous week">\u2039 Prev</button>'+
+        (isCurrentWeek?'':'<button class="btn btn-small" data-action="goto-today">Today</button>')+
+        '<button class="btn btn-small" data-action="next-week" aria-label="Next week">Next \u203a</button>'+
+      '</div>'+
+      '<div class="week-label-block"><span class="week-label">'+escapeHTML(weekLabel)+'</span><span class="week-range">'+shortRange(weekDates[0],weekDates[6])+'</span></div>'+
+      '<button class="btn btn-ghost btn-small" data-action="open-semester-settings">Semester settings</button>'+
+    '</div>';
+  }
+
+  function renderWeekView(){
+    var weekDates = getWeekDatesFrom(viewedMonday);
+    var realTodayMonday = mondayOfDate(new Date());
+    var isCurrentWeek = viewedMonday.getTime() === realTodayMonday.getTime();
+    var todayIdx = isCurrentWeek ? ourDayIndex(new Date()) : -1;
+    var weekLabel = getWeekLabel(weekOffsetFor(viewedMonday));
+    var nav = weekNavHTML(weekDates, weekLabel, isCurrentWeek);
+
+    if(state.subjects.length===0){
+      return weekToolbarHTML() + nav +
+        emptyState("Add a subject first (see the Subjects tab), then come back to build your timetable.");
+    }
+    var bounds = getGridBounds();
+    var totalHours = (bounds.endMin - bounds.startMin)/60;
+
+    var railHTML = "";
+    for(var h=0; h<totalHours; h++){
+      var hourVal = Math.floor(bounds.startMin/60)+h;
+      railHTML += '<div class="hour-label" style="height:'+HOUR_PX+'px">'+pad2(hourVal)+':00</div>';
+    }
+
+    var headersHTML = "";
+    var daysHTML = "";
+    var dueRowHTML = "";
+    for(var d=0; d<7; d++){
+      var isToday = d===todayIdx;
+      var dateStr = isoDate(weekDates[d]);
+      headersHTML += '<div class="day-header'+(isToday?' is-today':'')+'">'+
+        '<span class="day-name">'+DAY_NAMES[d]+'</span>'+
+        '<span class="day-num'+(isToday?' stamp':'')+'">'+weekDates[d].getDate()+'</span>'+
+      '</div>';
+
+      var dayDeadlines = state.deadlines.filter(function(dl){ return dl.date===dateStr; })
+        .sort(function(a,b){ return (a.time||"").localeCompare(b.time||""); });
+      var duePills = dayDeadlines.map(function(dl){
+        var dsubj = getSubject(dl.subjectId);
+        var dcolor = dsubj ? dsubj.color : "#777";
+        var tip = (dsubj?dsubj.code+' \u2014 ':'')+dl.title+(dl.time?' \u00b7 '+dl.time:'')+(dl.done?' \u00b7 done':'');
+        return '<div class="due-pill'+(dl.done?' is-done':'')+'" style="--chip-color:'+dcolor+'">'+
+          '<input type="checkbox" class="due-check" data-action="toggle-deadline" data-id="'+dl.id+'" '+(dl.done?'checked':'')+'>'+
+          '<span class="due-text" data-action="edit-deadline" data-id="'+dl.id+'" title="'+escapeHTML(tip)+'">'+escapeHTML(dl.title)+'</span>'+
+        '</div>';
+      }).join("");
+      dueRowHTML += '<div class="due-cell">'+duePills+'</div>';
+
+      var daySessions = state.sessions.filter(function(s){
+        if(s.day!==d) return false;
+        if(s.recurStart && dateStr < s.recurStart) return false;
+        if(s.recurEnd && dateStr > s.recurEnd) return false;
+        return true;
+      });
+      var laidOut = layoutDayChips(daySessions);
+      var chipsHTML = laidOut.map(function(item){
+        var subj = getSubject(item.session.subjectId);
+        var color = subj ? subj.color : "#777";
+        var top = ((item.start - bounds.startMin)/30)*ROW_PX;
+        var height = Math.max(ROW_PX-2, ((item.end-item.start)/30)*ROW_PX - 2);
+        var widthPct = 100/item.colCount;
+        var leftPct = item.col*widthPct;
+        var titleBits = [(subj?subj.code:"?")+' · '+item.session.type, 'Every '+DAY_NAMES[d]+', '+item.session.start+'–'+item.session.end];
+        if(item.session.location) titleBits.push(item.session.location);
+        if(item.session.recurStart || item.session.recurEnd){
+          titleBits.push('Active'+(item.session.recurStart?' from '+item.session.recurStart:'')+(item.session.recurEnd?' until '+item.session.recurEnd:''));
+        }
+        return '<div class="chip" data-action="edit-session" data-id="'+item.session.id+'" tabindex="0" role="button" title="'+escapeHTML(titleBits.join(' · '))+'" '+
+          'style="top:'+top+'px; height:'+height+'px; left:calc('+leftPct+'% + 2px); width:calc('+widthPct+'% - 4px); --chip-color:'+color+'">'+
+          '<span class="chip-code">'+escapeHTML(subj?subj.code:"?")+(item.session.type?' · '+escapeHTML(item.session.type):'')+'</span>'+
+          '<span class="chip-time">'+item.session.start+'–'+item.session.end+'</span>'+
+          (item.session.location?'<span class="chip-loc">'+escapeHTML(item.session.location)+'</span>':'')+
+        '</div>';
+      }).join("");
+
+      daysHTML += '<div class="daycol" style="height:'+(totalHours*HOUR_PX)+'px">'+chipsHTML+'</div>';
+    }
+
+    return weekToolbarHTML() + nav +
+      '<div class="grid-scroll"><div class="week-grid">'+
+        '<div class="corner-cell"></div>'+
+        headersHTML+
+        '<div class="due-row-corner"><span class="due-row-label">DUE</span></div>'+
+        dueRowHTML+
+        '<div class="rail" style="height:'+(totalHours*HOUR_PX)+'px">'+railHTML+'</div>'+
+        daysHTML+
+      '</div></div>';
+  }
+
+  function renderToolbar(title, addAction, addLabel){
+    return '<div class="view-toolbar"><span class="view-title">'+title+'</span>'+
+      '<button class="btn btn-add btn-small" data-action="'+addAction+'">'+addLabel+'</button></div>';
+  }
+  function emptyState(msg){
+    return '<div class="empty-state">'+escapeHTML(msg)+'</div>';
+  }
+
+  /* ============ Deadlines view ============ */
+  function renderDeadlinesView(){
+    if(state.subjects.length===0){
+      return renderToolbar("Tasks & deadlines", "add-deadline", "+ Add deadline") +
+        emptyState("Add a subject first (see the Subjects tab), then track deadlines against it.");
+    }
+    var todayStr = todayISO();
+    var items = state.deadlines.filter(function(dl){ return showCompletedDeadlines || !dl.done; });
+    items.sort(function(a,b){
+      if(a.date!==b.date) return a.date<b.date ? -1:1;
+      return (a.time||"").localeCompare(b.time||"");
+    });
+
+    var toolbar = '<div class="view-toolbar">'+
+      '<div><div class="view-title">Tasks &amp; deadlines</div>'+
+      '<div class="view-hint">One-off — assignments, exams, anything with a due date. Tick it off once it\'s done; nothing here repeats on its own.</div></div>'+
+      '<div class="deadline-controls">'+
+        '<label class="toggle-row"><input type="checkbox" id="showCompletedToggle" '+(showCompletedDeadlines?'checked':'')+'> Show completed</label>'+
+        '<button class="btn btn-add btn-small" data-action="add-deadline">+ Add deadline</button>'+
+      '</div></div>';
+
+    if(items.length===0){
+      return toolbar + emptyState(showCompletedDeadlines ? "Nothing here yet." : "No upcoming deadlines. Nice, or add one with “+ Add deadline”.");
+    }
+
+    var groups = [];
+    var groupMap = {};
+    items.forEach(function(dl){
+      if(!groupMap[dl.date]){ groupMap[dl.date] = []; groups.push(dl.date); }
+      groupMap[dl.date].push(dl);
+    });
+
+    var html = "";
+    groups.forEach(function(dateStr, gi){
+      var d = parseISODate(dateStr);
+      var isOverdue = dateStr < todayStr;
+      var isToday = dateStr === todayStr;
+      var badgeClass = isToday ? "is-today" : (isOverdue ? "is-overdue" : "");
+      html += '<div class="date-group">'+
+        '<div class="stamp-badge '+badgeClass+'">'+
+          '<span class="weekday">'+DAY_NAMES[ourDayIndex(d)]+'</span>'+
+          '<span class="daynum">'+d.getDate()+'</span>'+
+          '<span class="month">'+MONTH_NAMES[d.getMonth()]+'</span>'+
+        '</div>'+
+        '<div class="deadline-items">'+
+          groupMap[dateStr].map(renderDeadlineItem).join("")+
+        '</div>'+
+      '</div>';
+    });
+
+    return toolbar + html;
+  }
+
+  function renderDeadlineItem(dl){
+    var subj = getSubject(dl.subjectId);
+    var color = subj ? subj.color : "#777";
+    var typeClass = dl.type==="Exam" ? "type-exam" : "";
+    return '<div class="deadline-item'+(dl.done?' is-done':'')+'">'+
+      '<input type="checkbox" class="deadline-check" data-action="toggle-deadline" data-id="'+dl.id+'" '+(dl.done?'checked':'')+'>'+
+      '<div class="deadline-body">'+
+        '<div class="deadline-top-row">'+
+          '<span class="subject-tag" style="--chip-color:'+color+'">'+escapeHTML(subj?subj.code:"?")+'</span>'+
+          '<span class="type-pill '+typeClass+'">'+escapeHTML(dl.type)+'</span>'+
+          (dl.time ? '<span class="deadline-meta">'+dl.time+'</span>' : '')+
+        '</div>'+
+        '<div class="deadline-title">'+escapeHTML(dl.title)+'</div>'+
+        (dl.notes ? '<div class="deadline-meta">'+escapeHTML(dl.notes)+'</div>' : '')+
+      '</div>'+
+      '<div class="deadline-actions">'+
+        '<button class="icon-link" data-action="edit-deadline" data-id="'+dl.id+'">Edit</button>'+
+      '</div>'+
+    '</div>';
+  }
+  function parseISODate(str){
+    var parts = str.split("-");
+    return new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
+  }
+
+  /* ============ Subjects view ============ */
+  function renderSubjectsView(){
+    var cards = state.subjects.map(function(s){
+      var sessionCount = state.sessions.filter(function(x){ return x.subjectId===s.id; }).length;
+      var upcomingCount = state.deadlines.filter(function(x){ return x.subjectId===s.id && !x.done; }).length;
+      return '<div class="subject-card" style="--chip-color:'+s.color+'">'+
+        '<div class="subject-card-head"><span class="subject-code">'+escapeHTML(s.code)+'</span></div>'+
+        '<div class="subject-name">'+(s.name?escapeHTML(s.name):'<em>No full name added yet</em>')+'</div>'+
+        '<div class="subject-stats">'+sessionCount+' class'+(sessionCount===1?'':'es')+'/wk · '+upcomingCount+' open deadline'+(upcomingCount===1?'':'s')+'</div>'+
+        '<div class="subject-card-actions">'+
+          '<button class="btn btn-small" data-action="edit-subject" data-id="'+s.id+'">Edit</button>'+
+          '<button class="btn btn-small btn-danger" data-action="delete-subject" data-id="'+s.id+'">Delete</button>'+
+        '</div>'+
+      '</div>';
+    }).join("");
+
+    return '<div class="view-toolbar"><span class="view-title">Subjects</span></div>'+
+      '<div class="subject-grid">'+cards+
+        '<button class="add-subject-card" data-action="add-subject">+ Add subject</button>'+
+      '</div>';
+  }
+
+  /* ============ Modal system ============ */
+  function openModal(html){
+    document.getElementById("modalBody").innerHTML = html;
+    document.getElementById("modalOverlay").hidden = false;
+    var firstInput = document.querySelector("#modalBody input, #modalBody select");
+    if(firstInput) firstInput.focus();
+  }
+  function closeModal(){
+    document.getElementById("modalOverlay").hidden = true;
+    document.getElementById("modalBody").innerHTML = "";
+    editingSessionId = null; editingDeadlineId = null; editingSubjectId = null;
+  }
+
+  function subjectOptionsHTML(selectedId){
+    return state.subjects.map(function(s){
+      return '<option value="'+s.id+'"'+(s.id===selectedId?' selected':'')+'>'+escapeHTML(s.code)+(s.name?' — '+escapeHTML(s.name):'')+'</option>';
+    }).join("");
+  }
+
+  function openSessionForm(existing){
+    editingSessionId = existing ? existing.id : null;
+    var day = existing ? existing.day : ourDayIndex(new Date())%5; // default weekday
+    var startVal = existing ? existing.start : "09:00";
+    var endVal = existing ? existing.end : "10:00";
+    var typeVal = existing ? existing.type : "Lecture";
+    var subjectId = existing ? existing.subjectId : state.subjects[0].id;
+    var location = existing ? existing.location : "";
+    var recurStart = existing ? (existing.recurStart||"") : "";
+    var recurEnd = existing ? (existing.recurEnd||"") : "";
+
+    var dayOptions = DAY_NAMES.map(function(name,i){
+      return '<option value="'+i+'"'+(i===day?' selected':'')+'>'+name+'</option>';
+    }).join("");
+    var typeOptions = ["Lecture","Tutorial","Lab","Seminar","Other"].map(function(t){
+      return '<option value="'+t+'"'+(t===typeVal?' selected':'')+'>'+t+'</option>';
+    }).join("");
+
+    openModal(
+      '<h2>'+(existing?'Edit class':'Add class')+'</h2>'+
+      '<div class="field"><label for="f-subject">Subject</label>'+
+        '<select id="f-subject">'+subjectOptionsHTML(subjectId)+'</select></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label for="f-day">Day</label><select id="f-day">'+dayOptions+'</select></div>'+
+        '<div class="field"><label for="f-type">Type</label><select id="f-type">'+typeOptions+'</select></div>'+
+      '</div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label for="f-start">Start</label><input type="time" id="f-start" value="'+startVal+'"></div>'+
+        '<div class="field"><label for="f-end">End</label><input type="time" id="f-end" value="'+endVal+'"></div>'+
+      '</div>'+
+      '<div class="field"><label for="f-location">Location (optional)</label><input type="text" id="f-location" value="'+escapeHTML(location)+'" placeholder="e.g. LT19, Zoom"></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label for="f-recur-start">Starts on (optional)</label><input type="date" id="f-recur-start" value="'+recurStart+'"></div>'+
+        '<div class="field"><label for="f-recur-end">Ends on (optional)</label><input type="date" id="f-recur-end" value="'+recurEnd+'"></div>'+
+      '</div>'+
+      '<div class="field-hint">Repeats automatically, every week, on the day above — you never need to re-add it. Leave both dates blank for an ongoing class, or set a range (e.g. your semester\'s teaching weeks) so it stops appearing on its own once term ends.</div>'+
+      '<div class="field-error" id="f-error"></div>'+
+      '<div class="modal-actions">'+
+        (existing ? '<button class="btn btn-danger btn-small" data-action="delete-session" data-id="'+existing.id+'">Delete class</button>' : '<span></span>')+
+        '<div class="modal-actions-right">'+
+          '<button class="btn btn-small" data-action="close-modal">Cancel</button>'+
+          '<button class="btn btn-add btn-small" data-action="save-session">'+(existing?'Save changes':'Add class')+'</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function showFieldError(msg){
+    var el = document.getElementById("f-error");
+    el.textContent = msg;
+    el.classList.add("is-visible");
+  }
+
+  function saveSessionFromForm(){
+    var subjectId = document.getElementById("f-subject").value;
+    var day = parseInt(document.getElementById("f-day").value,10);
+    var type = document.getElementById("f-type").value;
+    var start = document.getElementById("f-start").value;
+    var end = document.getElementById("f-end").value;
+    var location = document.getElementById("f-location").value.trim();
+    var recurStart = document.getElementById("f-recur-start").value;
+    var recurEnd = document.getElementById("f-recur-end").value;
+
+    if(!start || !end || timeToMinutes(end) <= timeToMinutes(start)){
+      showFieldError("End time must be after start time.");
+      return;
+    }
+    if(recurStart && recurEnd && recurEnd < recurStart){
+      showFieldError("The \u201cends on\u201d date must be on or after the \u201cstarts on\u201d date.");
+      return;
+    }
+    if(editingSessionId){
+      var existing = state.sessions.find(function(s){ return s.id===editingSessionId; });
+      existing.subjectId=subjectId; existing.day=day; existing.type=type;
+      existing.start=start; existing.end=end; existing.location=location;
+      existing.recurStart=recurStart; existing.recurEnd=recurEnd;
+    } else {
+      state.sessions.push({ id:uid(), subjectId:subjectId, day:day, type:type, start:start, end:end, location:location, recurStart:recurStart, recurEnd:recurEnd });
+    }
+    saveState();
+    closeModal();
+    render();
+  }
+
+  function openSemesterSettingsForm(){
+    openModal(
+      '<h2>Semester settings</h2>'+
+      '<div class="field"><label for="f-week1">Week 1 starts on (the Monday teaching begins)</label>'+
+        '<input type="date" id="f-week1" value="'+state.semesterWeek1Start+'"></div>'+
+      '<div class="field-hint">Everything else follows NUS\u2019s standard regular-semester structure automatically: Recess Week after Week 6, 13 teaching weeks total, then Reading Week and 2 weeks of Examinations. Update just this one date at the start of each new semester. Some programmes (e.g. Law, Medicine) run their own calendars \u2014 check yours if a label looks off.</div>'+
+      '<div class="modal-actions"><span></span><div class="modal-actions-right">'+
+        '<button class="btn btn-small" data-action="close-modal">Cancel</button>'+
+        '<button class="btn btn-add btn-small" data-action="save-semester-settings">Save</button>'+
+      '</div></div>'
+    );
+  }
+  function saveSemesterSettingsFromForm(){
+    var val = document.getElementById("f-week1").value;
+    if(!val) return;
+    state.semesterWeek1Start = isoDate(mondayOfDate(parseISODate(val)));
+    saveState();
+    closeModal();
+    render();
+  }
+
+  function openDeadlineForm(existing){
+    editingDeadlineId = existing ? existing.id : null;
+    var subjectId = existing ? existing.subjectId : state.subjects[0].id;
+    var title = existing ? existing.title : "";
+    var date = existing ? existing.date : todayISO();
+    var time = existing ? (existing.time||"") : "";
+    var type = existing ? existing.type : "Assignment";
+    var notes = existing ? (existing.notes||"") : "";
+
+    var typeOptions = ["Assignment","Exam","Quiz","Other"].map(function(t){
+      return '<option value="'+t+'"'+(t===type?' selected':'')+'>'+t+'</option>';
+    }).join("");
+
+    openModal(
+      '<h2>'+(existing?'Edit deadline':'Add deadline')+'</h2>'+
+      '<div class="field"><label for="f-subject">Subject</label><select id="f-subject">'+subjectOptionsHTML(subjectId)+'</select></div>'+
+      '<div class="field"><label for="f-title">Title</label><input type="text" id="f-title" value="'+escapeHTML(title)+'" placeholder="e.g. Problem Set 3"></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label for="f-date">Date</label><input type="date" id="f-date" value="'+date+'"></div>'+
+        '<div class="field"><label for="f-time">Time (optional)</label><input type="time" id="f-time" value="'+time+'"></div>'+
+      '</div>'+
+      '<div class="field"><label for="f-type">Type</label><select id="f-type">'+typeOptions+'</select></div>'+
+      '<div class="field"><label for="f-notes">Notes (optional)</label><textarea id="f-notes">'+escapeHTML(notes)+'</textarea></div>'+
+      '<div class="field-error" id="f-error">Please add a title and a date.</div>'+
+      '<div class="modal-actions">'+
+        (existing ? '<button class="btn btn-danger btn-small" data-action="delete-deadline" data-id="'+existing.id+'">Delete</button>' : '<span></span>')+
+        '<div class="modal-actions-right">'+
+          '<button class="btn btn-small" data-action="close-modal">Cancel</button>'+
+          '<button class="btn btn-add btn-small" data-action="save-deadline">'+(existing?'Save changes':'Add deadline')+'</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function saveDeadlineFromForm(){
+    var subjectId = document.getElementById("f-subject").value;
+    var title = document.getElementById("f-title").value.trim();
+    var date = document.getElementById("f-date").value;
+    var time = document.getElementById("f-time").value;
+    var type = document.getElementById("f-type").value;
+    var notes = document.getElementById("f-notes").value.trim();
+
+    if(!title || !date){
+      document.getElementById("f-error").classList.add("is-visible");
+      return;
+    }
+    if(editingDeadlineId){
+      var existing = state.deadlines.find(function(d){ return d.id===editingDeadlineId; });
+      existing.subjectId=subjectId; existing.title=title; existing.date=date;
+      existing.time=time; existing.type=type; existing.notes=notes;
+    } else {
+      state.deadlines.push({ id:uid(), subjectId:subjectId, title:title, date:date, time:time, type:type, notes:notes, done:false });
+    }
+    saveState();
+    closeModal();
+    render();
+  }
+
+  function openSubjectForm(existing){
+    editingSubjectId = existing ? existing.id : null;
+    var code = existing ? existing.code : "";
+    var name = existing ? existing.name : "";
+    var color = existing ? existing.color : nextPaletteColor();
+
+    var dots = PALETTE.map(function(c){
+      return '<span class="color-dot'+(c===color?' is-selected':'')+'" style="background:'+c+'" data-color="'+c+'" data-action="pick-color"></span>';
+    }).join("");
+
+    openModal(
+      '<h2>'+(existing?'Edit subject':'Add subject')+'</h2>'+
+      '<div class="field"><label for="f-code">Course code</label><input type="text" id="f-code" value="'+escapeHTML(code)+'" placeholder="e.g. CS4238"></div>'+
+      '<div class="field"><label for="f-name">Full name (optional — fill in once you\'ve confirmed it)</label><input type="text" id="f-name" value="'+escapeHTML(name)+'" placeholder="e.g. Computer Security"></div>'+
+      '<div class="field"><label>Colour</label><div class="color-options" id="colorOptions">'+dots+'</div>'+
+        '<input type="hidden" id="f-color" value="'+color+'"></div>'+
+      '<div class="field-error" id="f-error">Course code is required.</div>'+
+      '<div class="modal-actions">'+
+        (existing ? '<button class="btn btn-danger btn-small" data-action="delete-subject" data-id="'+existing.id+'">Delete subject</button>' : '<span></span>')+
+        '<div class="modal-actions-right">'+
+          '<button class="btn btn-small" data-action="close-modal">Cancel</button>'+
+          '<button class="btn btn-add btn-small" data-action="save-subject">'+(existing?'Save changes':'Add subject')+'</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+
+  function saveSubjectFromForm(){
+    var code = document.getElementById("f-code").value.trim();
+    var name = document.getElementById("f-name").value.trim();
+    var color = document.getElementById("f-color").value;
+
+    if(!code){
+      document.getElementById("f-error").classList.add("is-visible");
+      return;
+    }
+    if(editingSubjectId){
+      var existing = state.subjects.find(function(s){ return s.id===editingSubjectId; });
+      existing.code=code; existing.name=name; existing.color=color;
+    } else {
+      state.subjects.push({ id:uid(), code:code, name:name, color:color });
+    }
+    saveState();
+    closeModal();
+    render();
+  }
+
+  function deleteSubject(id){
+    var subj = getSubject(id);
+    if(!subj) return;
+    var msg = "Delete "+subj.code+"? This also removes its classes and deadlines. This can't be undone.";
+    if(!window.confirm(msg)) return;
+    state.subjects = state.subjects.filter(function(s){ return s.id!==id; });
+    state.sessions = state.sessions.filter(function(s){ return s.subjectId!==id; });
+    state.deadlines = state.deadlines.filter(function(d){ return d.subjectId!==id; });
+    saveState();
+    closeModal();
+    render();
+  }
+
+  /* ============ Export / Import ============ */
+  function exportData(){
+    var blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var stamp = todayISO();
+    a.href = url;
+    a.download = "course-desk-backup-"+stamp+".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function importData(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var parsed = JSON.parse(reader.result);
+        if(!parsed || !Array.isArray(parsed.subjects) || !Array.isArray(parsed.sessions) || !Array.isArray(parsed.deadlines)){
+          throw new Error("bad shape");
+        }
+        if(!window.confirm("This replaces everything currently in Course Desk with the contents of this file. Continue?")) return;
+        state = parsed;
+        saveState();
+        render();
+      }catch(e){
+        window.alert("Couldn't read that file — it doesn't look like a Course Desk backup.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ============ Event wiring ============ */
+  document.querySelectorAll(".tab").forEach(function(tab){
+    tab.addEventListener("click", function(){
+      activeView = tab.getAttribute("data-view");
+      render();
+    });
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", exportData);
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    if(e.target.files && e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = "";
+  });
+
+  document.getElementById("modalOverlay").addEventListener("click", function(e){
+    if(e.target===this) closeModal();
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key==="Escape" && !document.getElementById("modalOverlay").hidden) closeModal();
+  });
+
+  // Delegated click handling for main content + modal
+  document.addEventListener("click", function(e){
+    var el = e.target.closest("[data-action]");
+    if(!el) return;
+    var action = el.getAttribute("data-action");
+    var id = el.getAttribute("data-id");
+
+    if(action==="add-session") openSessionForm(null);
+    else if(action==="edit-session") openSessionForm(state.sessions.find(function(s){return s.id===id;}));
+    else if(action==="save-session") saveSessionFromForm();
+    else if(action==="prev-week"){ viewedMonday = new Date(viewedMonday.getFullYear(), viewedMonday.getMonth(), viewedMonday.getDate()-7); render(); }
+    else if(action==="next-week"){ viewedMonday = new Date(viewedMonday.getFullYear(), viewedMonday.getMonth(), viewedMonday.getDate()+7); render(); }
+    else if(action==="goto-today"){ viewedMonday = mondayOfDate(new Date()); render(); }
+    else if(action==="open-semester-settings") openSemesterSettingsForm();
+    else if(action==="save-semester-settings") saveSemesterSettingsFromForm();
+    else if(action==="delete-session"){
+      if(window.confirm("Delete this class from your timetable?")){
+        state.sessions = state.sessions.filter(function(s){return s.id!==id;});
+        saveState(); closeModal(); render();
+      }
+    }
+    else if(action==="add-deadline") openDeadlineForm(null);
+    else if(action==="edit-deadline") openDeadlineForm(state.deadlines.find(function(d){return d.id===id;}));
+    else if(action==="save-deadline") saveDeadlineFromForm();
+    else if(action==="delete-deadline"){
+      if(window.confirm("Delete this deadline?")){
+        state.deadlines = state.deadlines.filter(function(d){return d.id!==id;});
+        saveState(); closeModal(); render();
+      }
+    }
+    else if(action==="toggle-deadline"){
+      var dl = state.deadlines.find(function(d){return d.id===id;});
+      if(dl){ dl.done = !dl.done; saveState(); render(); }
+    }
+    else if(action==="add-subject") openSubjectForm(null);
+    else if(action==="edit-subject") openSubjectForm(getSubject(id));
+    else if(action==="save-subject") saveSubjectFromForm();
+    else if(action==="delete-subject") deleteSubject(id);
+    else if(action==="pick-color"){
+      var color = el.getAttribute("data-color");
+      document.getElementById("f-color").value = color;
+      document.querySelectorAll(".color-dot").forEach(function(dot){
+        dot.classList.toggle("is-selected", dot.getAttribute("data-color")===color);
+      });
+    }
+    else if(action==="close-modal") closeModal();
+  });
+
+  document.addEventListener("change", function(e){
+    if(e.target.id==="showCompletedToggle"){
+      showCompletedDeadlines = e.target.checked;
+      render();
+    }
+  });
+
+  /* ============ Init ============ */
+  saveState();
+  render();
+})();
+</script>
+</body>
+</html>
