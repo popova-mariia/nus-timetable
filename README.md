@@ -1,3 +1,5 @@
+Deployed version: https://nus-timetable.onrender.com/
+
 # Course Desk
 
 A personal, single-page calendar for tracking your subjects — weekly class
